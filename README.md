@@ -2,15 +2,15 @@
 
 This is a custom web calculator that estimates the manufacturing price of springs.
 
-Features
+## Features
 - Material cost calculation
 - Quantity based pricing
 - Instant price estimation
 
-Technologies
+## Technologies
 HTML
 CSS
 JavaScript
 
-Use Case
+## Use Case
 Built for manufacturing businesses to quickly estimate spring production cost.
