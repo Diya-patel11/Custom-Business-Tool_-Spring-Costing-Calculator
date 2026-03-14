@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring Costing Calculator</title>
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Spring Calculator">
+  <meta name="description" content="Professional spring costing calculator for manufacturing">
+  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiU3ByaW5nIENvc3RpbmcgQ2FsY3VsYXRvciIsInNob3J0X25hbWUiOiJTcHJpbmcgQ2FsYyIsImRlc2NyaXB0aW9uIjoiUHJvZmVzc2lvbmFsIHNwcmluZyBjb3N0aW5nIGNhbGN1bGF0b3IgZm9yIG1hbnVmYWN0dXJpbmciLCJzdGFydF91cmwiOiIuLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmOGZhZmMiLCJ0aGVtZV9jb2xvciI6IiM0ZjQ2ZTUiLCJpY29ucyI6W119">
+
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --primary-light: #e0e7ff;
+      --danger: #ef4444;
+      --danger-dark: #dc2626;
+      --success: #10b981;
+      --success-dark: #059669;
+      --light-bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--light-bg);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--primary);
+      font-size: 28px;
+      margin-bottom: 24px;
+      position: relative;
+      padding-bottom: 10px;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(to right, var(--primary), var(--success));
+      border-radius: 2px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px 14px;
+      margin-top: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 15px;
+      transition: all 0.3s ease;
+      background-color: var(--light-bg);
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-calc { background-color: var(--primary); color: white; }
+    .btn-calc:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+    .btn-reset { background-color: var(--danger); color: white; }
+    .btn-reset:hover { background-color: var(--danger-dark); transform: translateY(-2px); }
+
+    .summary {
+      margin-top: 25px;
+      background: white;
+      border: 2px solid var(--primary);
+      border-radius: 14px;
+      padding: 20px;
+      animation: fadeIn 0.5s ease;
+      box-shadow: 0 4px 15px rgba(79, 70, 229, 0.15);
+    }
+
+    .summary h3 {
+      text-align: center;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      margin: -20px -20px 15px -20px;
+      padding: 14px;
+      border-radius: 12px 12px 0 0;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .summary-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .summary-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 15px;
+      background: #f8fafc;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .summary-label {
+      min-width: 180px;
+      font-size: 14px;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      font-weight: 700;
+    }
+
+    .summary-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .value-purple { color: var(--primary-dark); font-weight: 700; }
+
+    .summary-value small {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text-light);
+      margin-left: 4px;
+    }
+
+    .error {
+      background-color: #fef2f2;
+      color: var(--danger);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid var(--danger);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: fadeIn 0.3s ease;
+      font-size: 14px;
+    }
+
+    .input-group { position: relative; }
+
+    .input-group label {
+      position: absolute;
+      top: -10px;
+      left: 12px;
+      background: var(--card-bg);
+      padding: 0 6px;
+      font-size: 13px;
+      color: var(--primary);
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .input-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      font-size: 14px;
+    }
+
+    /* ── Density section ── */
+    .density-section {
+      margin-top: 20px;
+      border: 1.5px dashed var(--border);
+      border-radius: 12px;
+      padding: 16px 18px 18px;
+      background: #fafbff;
+      transition: border-color 0.3s;
+    }
+
+    .density-section.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .density-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .density-toggle-row span {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .density-toggle-row small {
+      font-size: 12px;
+      color: var(--text-light);
+      font-weight: 400;
+    }
+
+    /* Toggle switch */
+    .toggle-wrap { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+    .toggle-switch {
+      position: relative;
+      width: 46px;
+      height: 24px;
+      cursor: pointer;
+    }
+
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #cbd5e1;
+      border-radius: 24px;
+      transition: 0.3s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    .toggle-switch input:checked + .toggle-slider { background: var(--primary); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
+
+    .density-inputs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .density-inputs.hidden { display: none; }
+
+    .material-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 14px;
+    }
+
+    .preset-btn {
+      padding: 5px 13px;
+      border-radius: 20px;
+      border: 1.5px solid var(--primary);
+      background: white;
+      color: var(--primary);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .preset-btn:hover, .preset-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .density-note {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .install-prompt {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--primary);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .install-prompt:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 15px; }
+      h2 { font-size: 24px; margin-bottom: 18px; }
+      .grid { grid-template-columns: 1fr; gap: 12px; }
+      .summary-row { flex-direction: column; align-items: flex-start; gap: 6px; padding: 12px; }
+      .summary-label { min-width: auto; font-size: 13px; }
+      .summary-value { font-size: 14px; margin-left: 0; text-align: left; }
+      .install-prompt { bottom: 10px; right: 10px; left: 10px; justify-content: center; }
+      .input-group label { font-size: 12px; top: -9px; }
+      input, select { font-size: 14px; padding: 10px 12px; }
+      .btn { font-size: 14px; padding: 10px; }
+      .density-toggle-row { flex-direction: column; align-items: flex-start; }
+      .toggle-wrap { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>SPRING COSTING CALCULATOR</h2>
+
+  <div id="error" class="error" style="display:none;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span id="error-message"></span>
+  </div>
+
+  <div class="input-group">
+    <label for="inputType">CALCULATION METHOD</label>
+    <select id="inputType">
+      <option value="od_wire_coils">OD + Wire Dia + Coils</option>
+      <option value="id_wire_coils">ID + Wire Dia + Coils</option>
+      <option value="od_id_coils">OD + ID + Coils</option>
+    </select>
+    <span class="input-icon">▼</span>
+  </div>
+
+  <div class="grid" id="inputFields"></div>
+
+  <div class="grid">
+    <div class="input-group">
+      <label for="coils">TOTAL COILS</label>
+      <input id="coils" placeholder="Enter value" type="number" step="0.1" />
+      <span class="input-icon">↻</span>
+    </div>
+    <div class="input-group">
+      <label for="quantity">QUANTITY</label>
+      <input id="quantity" placeholder="Enter value" type="number" />
+      <span class="input-icon">✖</span>
+    </div>
+    <div class="input-group">
+      <label for="rate">MATERIAL RATE (₹/kg)</label>
+      <input id="rate" placeholder="Enter rate" type="number" step="0.01" />
+      <span class="input-icon">₹</span>
+    </div>
+    <div class="input-group">
+      <label for="otherCost">OTHER COST/SPRING (₹)</label>
+      <input id="otherCost" placeholder="Enter cost" type="number" step="0.01" />
+      <span class="input-icon">+</span>
+    </div>
+    <div class="input-group">
+      <label for="profit">PROFIT</label>
+      <input id="profit" placeholder="Enter profit" type="number" step="0.01" />
+      <span class="input-icon">%</span>
+    </div>
+    <div class="input-group">
+      <label for="profitType">PROFIT TYPE</label>
+      <select id="profitType">
+        <option value="percent">Profit in %</option>
+        <option value="perpiece">Profit ₹/piece</option>
+      </select>
+      <span class="input-icon">▼</span>
+    </div>
+  </div>
+
+  <!-- ── DENSITY SECTION ── -->
+  <div class="density-section" id="densitySection">
+    <div class="density-toggle-row">
+      <span>⚙ Custom Material Density</span>
+      <small>(optional — defaults to Steel 7850 kg/m³)</small>
+      <div class="toggle-wrap">
+        <label class="toggle-switch">
+          <input type="checkbox" id="densityToggle" onchange="toggleDensity()" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="density-inputs hidden" id="densityInputs">
+      <!-- Quick preset buttons -->
+      <div style="grid-column: 1 / -1;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px;">Quick Presets</div>
+        <div class="material-presets" id="materialPresets">
+          <button class="preset-btn active" onclick="setPreset(this, 7850)">Steel (7850)</button>
+          <button class="preset-btn" onclick="setPreset(this, 8000)">Stainless (8000)</button>
+          <button class="preset-btn" onclick="setPreset(this, 8400)">Phosphor Bronze (8400)</button>
+          <button class="preset-btn" onclick="setPreset(this, 8730)">Beryllium Copper (8730)</button>
+          <button class="preset-btn" onclick="setPreset(this, 2700)">Aluminium (2700)</button>
+          <button class="preset-btn" onclick="setPreset(this, 8900)">Titanium (4510)">Titanium (4510)</button>
+          <button class="preset-btn" onclick="setPreset(this, 4510)">Titanium (4510)</button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="density">DENSITY (kg/m³)</label>
+        <input id="density" type="number" step="1" placeholder="e.g. 7850" value="7850" />
+        <span class="input-icon">ρ</span>
+      </div>
+    </div>
+
+    <div class="density-note" id="densityNote">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      Currently using: <strong id="densityDisplay">Steel — 7850 kg/m³ (default)</strong>
+    </div>
+  </div>
+  <!-- ── END DENSITY SECTION ── -->
+
+  <div class="buttons">
+    <button class="btn btn-calc" onclick="calculate()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="6" width="16" height="12" rx="2"></rect>
+        <path d="M8 10h8"></path><path d="M8 14h8"></path><path d="M12 10v4"></path>
+      </svg>
+      CALCULATE
+    </button>
+    <button class="btn btn-reset" onclick="resetCalculator()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path>
+      </svg>
+      RESET
+    </button>
+  </div>
+
+  <div id="summary" class="summary" style="display:none;"></div>
+</div>
+
+<button id="installBtn" class="install-prompt">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="7,10 12,15 17,10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>
+  </svg>
+  INSTALL APP
+</button>
+
+<script>
+  // Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      const swCode = `
+        const CACHE_NAME = 'spring-calc-v2';
+        const urlsToCache = ['./', './index.html'];
+        self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache))));
+        self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob))
+        .then(() => {}).catch(() => {});
+    });
+  }
+
+  const inputType    = document.getElementById("inputType");
+  const inputFields  = document.getElementById("inputFields");
+  const errorBox     = document.getElementById("error");
+  const errorMessage = document.getElementById("error-message");
+  const summaryBox   = document.getElementById("summary");
+
+  // PWA install
+  let deferredPrompt;
+  const installBtn = document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'flex'; });
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') installBtn.style.display = 'none';
+    deferredPrompt = null;
+  });
+  window.addEventListener('appinstalled', () => installBtn.style.display = 'none');
+
+  /* ─── Density helpers ─── */
+  const MATERIAL_NAMES = {
+    7850: 'Steel', 8000: 'Stainless Steel', 8400: 'Phosphor Bronze',
+    8730: 'Beryllium Copper', 2700: 'Aluminium', 4510: 'Titanium'
+  };
+
+  function toggleDensity() {
+    const on = document.getElementById('densityToggle').checked;
+    document.getElementById('densityInputs').classList.toggle('hidden', !on);
+    document.getElementById('densitySection').classList.toggle('active', on);
+    updateDensityNote();
+  }
+
+  function setPreset(btn, value) {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('density').value = value;
+    updateDensityNote();
+  }
+
+  document.addEventListener('input', e => {
+    if (e.target.id === 'density') {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      updateDensityNote();
+    }
+  });
+
+  function updateDensityNote() {
+    const on  = document.getElementById('densityToggle').checked;
+    const val = parseFloat(document.getElementById('density').value) || 7850;
+    const name = MATERIAL_NAMES[val] || 'Custom';
+    const display = document.getElementById('densityDisplay');
+    if (!on) {
+      display.textContent = 'Steel — 7850 kg/m³ (default)';
+    } else {
+      display.textContent = `${name} — ${val} kg/m³`;
+    }
+  }
+
+  function getEffectiveDensity() {
+    const on = document.getElementById('densityToggle').checked;
+    if (!on) return 7850;
+    const val = parseFloat(document.getElementById('density').value);
+    return (val > 0) ? val : 7850;
+  }
+
+  /* ─── Render dynamic dimension fields ─── */
+  function renderFields() {
+    const type = inputType.value;
+    inputFields.innerHTML = "";
+    const createInput = (id) => {
+      const icon = id === 'wireDia' ? '⌀' : '⬤';
+      const labelText = id === 'od' ? 'OUTER DIAMETER (MM)' : id === 'id' ? 'INNER DIAMETER (MM)' : 'WIRE DIAMETER (MM)';
+      return `<div class="input-group">
+        <label for="${id}">${labelText}</label>
+        <input id="${id}" placeholder="Enter value" type="number" step="0.01" />
+        <span class="input-icon">${icon}</span>
+      </div>`;
+    };
+    if (type === "od_wire_coils" || type === "od_id_coils") inputFields.innerHTML += createInput("od");
+    if (type === "id_wire_coils" || type === "od_id_coils") inputFields.innerHTML += createInput("id");
+    if (type !== "od_id_coils") inputFields.innerHTML += createInput("wireDia");
+  }
+
+  inputType.addEventListener("change", renderFields);
+  renderFields();
+
+  /* ─── Reset ─── */
+  function resetCalculator() {
+    document.querySelectorAll("input[type=number]").forEach(i => i.value = "");
+    document.getElementById('densityToggle').checked = false;
+    document.getElementById('density').value = 7850;
+    toggleDensity();
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.preset-btn').classList.add('active');
+    errorBox.style.display = "none";
+    summaryBox.style.display = "none";
+    renderFields();
+  }
+
+  /* ─── Validation ─── */
+  function validateInputs(data) {
+    const required = ["quantity", "rate", "otherCost", "profit", "coils"];
+    if (data.inputType !== "od_id_coils") required.push("wireDia");
+    for (let f of required) {
+      if (!data[f] || isNaN(parseFloat(data[f]))) {
+        showError(`${f.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())} is required and must be a number`);
+        return false;
+      }
+    }
+    if (data.inputType === "od_wire_coils" && (!data.od || isNaN(parseFloat(data.od)))) { showError("Valid Outer Diameter is required"); return false; }
+    if (data.inputType === "id_wire_coils" && (!data.id || isNaN(parseFloat(data.id)))) { showError("Valid Inner Diameter is required"); return false; }
+    if (data.inputType === "od_id_coils" && (!data.od || !data.id || isNaN(data.od) || isNaN(data.id))) { showError("Valid Outer and Inner Diameters are required"); return false; }
+    if (parseFloat(data.quantity) <= 0 || parseFloat(data.rate) <= 0 || parseFloat(data.otherCost) < 0 || parseFloat(data.profit) < 0) { showError("Values must be positive numbers"); return false; }
+    if (data.inputType !== "od_id_coils" && parseFloat(data.wireDia) <= 0) { showError("Wire Diameter must be positive"); return false; }
+
+    const densityOn = document.getElementById('densityToggle').checked;
+    if (densityOn) {
+      const d = parseFloat(document.getElementById('density').value);
+      if (!d || d <= 0) { showError("Please enter a valid density value (kg/m³)"); return false; }
+    }
+    return true;
+  }
+
+  function calculateMeanDia(data) {
+    switch(data.inputType) {
+      case "od_wire_coils": return parseFloat(data.od) - parseFloat(data.wireDia);
+      case "id_wire_coils": return parseFloat(data.id) + parseFloat(data.wireDia);
+      case "od_id_coils":   return (parseFloat(data.od) + parseFloat(data.id)) / 2;
+      default: return 0;
+    }
+  }
+
+  function calculateWireDiaFromODID(data) { return (parseFloat(data.od) - parseFloat(data.id)) / 2; }
+
+  function showError(msg) { errorBox.style.display = "flex"; errorMessage.textContent = msg; }
+
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(amount);
+  }
+
+  /* ─── Calculate ─── */
+  function calculate() {
+    const data = {
+      inputType: inputType.value,
+      od:        document.getElementById("od")?.value,
+      id:        document.getElementById("id")?.value,
+      wireDia:   document.getElementById("wireDia")?.value,
+      coils:     document.getElementById("coils").value,
+      quantity:  document.getElementById("quantity").value,
+      rate:      document.getElementById("rate").value,
+      otherCost: document.getElementById("otherCost").value,
+      profit:    document.getElementById("profit").value,
+      profitType:document.getElementById("profitType").value,
+    };
+
+    if (!validateInputs(data)) return;
+
+    const wireDia  = data.inputType === "od_id_coils" ? calculateWireDiaFromODID(data) : parseFloat(data.wireDia);
+    const meanDia  = calculateMeanDia(data);
+    const coils    = parseFloat(data.coils);
+    const quantity = parseFloat(data.quantity);
+    const rate     = parseFloat(data.rate);
+    const otherCost= parseFloat(data.otherCost);
+    const profitInput = parseFloat(data.profit);
+
+    // Wire length (m)
+    const wireLengthPerSpring = (Math.PI * meanDia * coils) / 1000;
+    const totalWireLength     = wireLengthPerSpring * quantity;
+
+    /* ── Weight calculation ──
+       Formula:  weight (kg) = (π/4) × (d_m)² × L × ρ
+       where d_m = wire diameter in metres, L = wire length in metres, ρ = density kg/m³
+       This is exact — the old constant 162 is an approximation for steel only.
+       Old formula: weight = (wireDia² × totalWireLength) / 162   [steel approx]
+       New formula: weight = (π/4) × (wireDia/1000)² × totalWireLength × density
+    */
+    const density       = getEffectiveDensity();
+    const wireDia_m     = wireDia / 1000;                       // mm → m
+    const weight        = (Math.PI / 4) * Math.pow(wireDia_m, 2) * totalWireLength * density;
+    const weightPerSpring = weight / quantity;
+
+    const materialCost    = weight * rate;
+    const totalOtherCost  = otherCost * quantity;
+    const totalCost       = materialCost + totalOtherCost;
+    const costPerSpring   = totalCost / quantity;
+
+    let perPiecePrice, totalSellingPrice, totalProfit;
+    if (data.profitType === "percent") {
+      totalProfit       = totalCost * (profitInput / 100);
+      totalSellingPrice = totalCost + totalProfit;
+      perPiecePrice     = totalSellingPrice / quantity;
+    } else {
+      totalProfit       = profitInput * quantity;
+      perPiecePrice     = costPerSpring + profitInput;
+      totalSellingPrice = perPiecePrice * quantity;
+    }
+    const profitPerPiece = totalProfit / quantity;
+
+    const densityOn   = document.getElementById('densityToggle').checked;
+    const matName     = MATERIAL_NAMES[density] || 'Custom';
+    const densityLabel= densityOn ? `${matName} — ${density} kg/m³` : `Steel — 7850 kg/m³ (default)`;
+
+    summaryBox.style.display = "block";
+    errorBox.style.display   = "none";
+
+    let html = `<h3>SUMMARY</h3><div class="summary-list">`;
+
+    if (data.inputType === "od_id_coils") {
+      html += row("WIRE DIAMETER", `${wireDia.toFixed(2)} <small>mm</small>`);
+    }
+
+    html += row("MEAN DIAMETER",          `${meanDia.toFixed(2)} <small>mm</small>`);
+    html += row("WIRE LENGTH / SPRING",   `${wireLengthPerSpring.toFixed(4)} <small>m</small>`);
+    html += row("WIRE TOTAL LENGTH",      `${totalWireLength.toFixed(4)} <small>m</small>`);
+    html += row("MATERIAL DENSITY",       `${density} <small>kg/m³ · ${densityLabel}</small>`);
+    html += row("WEIGHT / SPRING",        `${weightPerSpring.toFixed(4)} <small>kg</small>`);
+    html += row("TOTAL WEIGHT",           `${weight.toFixed(4)} <small>kg</small>`);
+    html += row("MATERIAL COST",          formatCurrency(materialCost));
+    html += row("OTHER COST",             formatCurrency(totalOtherCost));
+    html += row("TOTAL COST",             formatCurrency(totalCost),       true);
+    html += row("COST / SPRING",          formatCurrency(costPerSpring),   true);
+    html += row("PROFIT / SPRING",        formatCurrency(profitPerPiece),  true);
+    html += row("TOTAL PROFIT",           formatCurrency(totalProfit),     true);
+    html += row("SELLING PRICE / SPRING", formatCurrency(perPiecePrice),   true);
+    html += row("TOTAL SELLING PRICE",    formatCurrency(totalSellingPrice),true);
+
+    html += `</div>`;
+    summaryBox.innerHTML = html;
+  }
+
+  function row(label, value, purple = false) {
+    return `<div class="summary-row">
+      <span class="summary-label">${label}</span>
+      <span class="summary-value ${purple ? 'value-purple' : ''}">${value}</span>
+    </div>`;
+  }
+</script>
+</body>
+</html>
